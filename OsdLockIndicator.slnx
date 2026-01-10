@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="OsdLockIndicator.vcxproj" Id="33b0b381-1aeb-401b-be99-663ead358564" />
+</Solution>
