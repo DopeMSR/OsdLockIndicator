@@ -6,7 +6,7 @@
 
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-blue)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-orange)
-![Size](https://img.shields.io/badge/size-225%20KB-green)
+![Size](https://img.shields.io/badge/size-231%20KB-green)
 ![License](https://img.shields.io/badge/license-MIT-brightgreen)
 
 [Features](#-features) • [Installation](#-installation) • [Customization](#%EF%B8%8F-customization) • [Building](#-building-from-source)
@@ -32,7 +32,7 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🔍 **Perfect Clarity** - Semi-transparent background with 100% opaque text
 
 ### Performance
-- ⚡ **Ultra-Lightweight** - Just 227 KB executable size
+- ⚡ **Ultra-Lightweight** - Just 231 KB executable size
 - 🚀 **Minimal Memory** - Uses only 1.6 MB of RAM
 - 💨 **Instant Startup** - Launches in milliseconds
 - 🎯 **Zero Dependencies** - No .NET framework or runtime required
@@ -71,33 +71,36 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 3. **Run** the executable
 4. That's it! The indicator will start automatically and add itself to Windows startup
 
-### Portable Usage
-
-Simply copy `OsdLockIndicator.exe` to a USB drive and run it on any Windows PC. No installation needed!
-
 ## 🗑️ Uninstall
 
 ### Complete Removal (Recommended)
 
-1. **End the process** (if running):
-   - Open Task Manager (`Ctrl+Shift+Esc`)
-   - Find `OsdLockIndicator.exe` and end task
+Simply run the uninstall command - it will automatically:
+1. Terminate any running instances
+2. Remove itself from Windows startup
+3. Allow you to delete the file
 
-2. **Navigate to the folder:**
+**Steps:**
+
+1. **Navigate to the folder:**
    - Open the folder where `OsdLockIndicator.exe` is located
-   - Hold `Shift` and right-click on empty space in the folder
-   - Select **"Open in Terminal"** (or **"Open PowerShell window here"** on older systems)
+   - Right-click on empty space in the folder
+   - Select **"Open in Terminal"**
 
-3. **Run the uninstall command:**
+2. **Run the uninstall command:**
    ```powershell
    .\OsdLockIndicator.exe /uninstall
    ```
    
-   A message will appear confirming removal from Windows startup.
+   A message will appear confirming:
+   - ✓ Running processes terminated
+   - ✓ Removed from Windows startup
 
-4. **Delete the file:**
+3. **Delete the file:**
    - Close the terminal
    - Delete `OsdLockIndicator.exe`
+
+**Note:** You don't need to manually end the process in Task Manager anymore - the uninstall command does this automatically!
 
 ### Alternative: Manual Removal
 
@@ -107,6 +110,7 @@ If you've already deleted the file without running the uninstall command:
 2. Navigate to: `HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`
 3. Find and delete the `OsdLockIndicator` entry
 4. Close Registry Editor
+5. Open Task Manager (`Ctrl+Shift+Esc`) and end any `OsdLockIndicator.exe` processes
 
 ---
 
@@ -244,7 +248,7 @@ Most modern games support borderless windowed mode natively.
 
 | Metric | Value |
 |--------|-------|
-| Executable Size | 227 KB |
+| Executable Size | 231 KB |
 | RAM Usage (Idle) | 1.6 MB |
 | RAM Usage (Active) | 1.7 MB |
 | CPU Usage (Idle) | <0.1% |
@@ -258,7 +262,7 @@ Most modern games support borderless windowed mode natively.
 
 | Feature | OSD Lock Indicator | Typical Alternatives |
 |---------|-------------------|---------------------|
-| **File Size** | 227 KB | 2-15 MB |
+| **File Size** | 231 KB | 2-15 MB |
 | **RAM Usage** | 1.6 MB | 8-25 MB |
 | **Dependencies** | None | .NET, Java, or other runtimes |
 | **Visual Quality** | Anti-aliased, smooth | Varies |
@@ -284,7 +288,7 @@ Most modern games support borderless windowed mode natively.
 **A:** Yes, for games running in Borderless Windowed or Windowed mode. Exclusive fullscreen may hide the overlay.
 
 ### Q: How do I stop it from auto-starting?
-**A:** End the process in Task Manager, then delete it. It removes itself from startup when deleted.
+**A:** Run the uninstall command (`.\OsdLockIndicator.exe /uninstall`) which will remove it from startup and terminate the process. Then delete the file.
 
 ### Q: Is this safe? My antivirus flagged it.
 **A:** Yes, it's completely safe. Some antivirus programs flag any software that uses keyboard hooks as potentially suspicious. This is a false positive - the source code is available for review.
@@ -296,13 +300,13 @@ Most modern games support borderless windowed mode natively.
 **A:** Scroll Lock is rarely used on modern systems. The code can be easily modified to include it if needed.
 
 ### Q: How do I uninstall this properly?
-**A:** Don't just delete the file! First, run the uninstall command to remove it from Windows startup:
+**A:** Don't just delete the file! First, run the uninstall command to properly remove it:
 1. Navigate to the folder with the .exe
-2. Hold `Shift` + right-click on empty space → **"Open in Terminal"**
+2. Right-click on empty space → **"Open in Terminal"**
 3. Run: `.\OsdLockIndicator.exe /uninstall` in PowerShell or `OsdLockIndicator.exe /uninstall` in CMD
 4. Then delete the file
 
-This ensures the registry entry is cleaned up properly.
+The uninstall command will automatically terminate any running processes and clean up the registry entry.
 
 ---
 
@@ -342,7 +346,7 @@ This ensures the registry entry is cleaned up properly.
 ### Multiple instances are running
 
 - Only one instance should run at a time due to mutex protection
-- If multiple instances appear in Task Manager, end all of them and restart
+- If multiple instances appear in Task Manager, run the uninstall command to clean them up
 
 ### The indicator appears on the wrong monitor
 

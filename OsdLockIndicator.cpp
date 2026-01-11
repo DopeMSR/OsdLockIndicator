@@ -1,10 +1,13 @@
-#include <windows.h>
+﻿#include <windows.h>
 #include <string>
 #include <gdiplus.h>
+#include <tlhelp32.h>
+#include <psapi.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "gdiplus.lib")
+#pragma comment(lib, "psapi.lib")
 
 using namespace Gdiplus;
 
@@ -39,6 +42,69 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
 void UpdateOSD();
 void CenterOnActiveMonitor(HWND hwnd);
 bool RemoveFromStartup();
+bool TerminateOtherInstances();
+
+// Terminate other running instances of this program
+bool TerminateOtherInstances()
+{
+    // Get current process ID
+    DWORD currentPID = GetCurrentProcessId();
+
+    // Get the full path of the current executable
+    wchar_t currentPath[MAX_PATH];
+    GetModuleFileNameW(NULL, currentPath, MAX_PATH);
+
+    // Convert to lowercase for comparison
+    std::wstring currentPathLower = currentPath;
+    for (auto& c : currentPathLower) c = towlower(c);
+
+    bool terminatedAny = false;
+
+    // Create snapshot of all processes
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnapshot == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    PROCESSENTRY32W pe32;
+    pe32.dwSize = sizeof(PROCESSENTRY32W);
+
+    // Iterate through all processes
+    if (Process32FirstW(hSnapshot, &pe32)) {
+        do {
+            // Skip current process
+            if (pe32.th32ProcessID == currentPID) {
+                continue;
+            }
+
+            // Check if process name matches
+            if (_wcsicmp(pe32.szExeFile, L"OsdLockIndicator.exe") == 0) {
+                // Open the process to get its path
+                HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ | PROCESS_TERMINATE,
+                    FALSE, pe32.th32ProcessID);
+
+                if (hProcess != NULL) {
+                    wchar_t processPath[MAX_PATH];
+                    if (GetModuleFileNameExW(hProcess, NULL, processPath, MAX_PATH) > 0) {
+                        // Convert to lowercase for comparison
+                        std::wstring processPathLower = processPath;
+                        for (auto& c : processPathLower) c = towlower(c);
+
+                        // Only terminate if it's the same executable
+                        if (processPathLower == currentPathLower) {
+                            TerminateProcess(hProcess, 0);
+                            terminatedAny = true;
+                        }
+                    }
+                    CloseHandle(hProcess);
+                }
+            }
+        } while (Process32NextW(hSnapshot, &pe32));
+    }
+
+    CloseHandle(hSnapshot);
+    return terminatedAny;
+}
 
 // Remove from Windows startup
 bool RemoveFromStartup()
@@ -76,19 +142,29 @@ int WINAPI WinMain(
         cmdLine.find("--uninstall") != std::string::npos ||
         cmdLine.find("-uninstall") != std::string::npos) {
 
-        // Remove from startup
-        bool success = RemoveFromStartup();
+        // Terminate any running instances
+        bool terminatedProcesses = TerminateOtherInstances();
 
-        if (success) {
+        // Small delay to ensure processes are fully terminated
+        if (terminatedProcesses) {
+            Sleep(500);
+        }
+
+        // Remove from startup
+        bool removedStartup = RemoveFromStartup();
+
+        if (removedStartup) {
             MessageBoxW(NULL,
-                L"OSD Lock Indicator has been removed from Windows startup.\n\n"
+                L"OSD Lock Indicator has been uninstalled:\n\n"
+                L"✓ Running processes terminated\n"
+                L"✓ Removed from Windows startup\n\n"
                 L"You can now safely delete the executable file.",
                 L"Uninstall Complete",
                 MB_OK | MB_ICONINFORMATION);
         }
         else {
             MessageBoxW(NULL,
-                L"Could not remove from startup registry.\n\n"
+                L"Processes were terminated, but could not remove from startup registry.\n\n"
                 L"Please manually remove from:\n"
                 L"HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
                 L"Uninstall Error",
