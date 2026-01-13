@@ -36,7 +36,7 @@ constexpr int CORNER_RADIUS   = 20;     // Roundness of corners (0 = square)
 // POSITION ON SCREEN
 // =============================================================================
 
-constexpr int DISTANCE_FROM_BOTTOM = 75;    // How far from the bottom of the screen (pixels)
+constexpr int DISTANCE_FROM_BOTTOM = 15;    // How far from the bottom of the screen (pixels)
                                             // Increase to move the indicator higher
 
 // =============================================================================
