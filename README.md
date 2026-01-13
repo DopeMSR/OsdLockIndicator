@@ -2,11 +2,11 @@
 
 <div align="center">
 
-**A beautiful, ultra-lightweight Windows utility that displays an elegant on-screen notification when Caps Lock, Num Lock, or Scroll Lock is toggled.**
+**A beautiful, ultra-lightweight Windows utility that displays an elegant on-screen notification when Caps Lock or Num Lock is toggled.**
 
 ![Platform](https://img.shields.io/badge/platform-Windows%2011-blue)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-orange)
-![Size](https://img.shields.io/badge/size-234%20KB-green)
+![Size](https://img.shields.io/badge/size-231%20KB-green)
 ![License](https://img.shields.io/badge/license-MIT-brightgreen)
 
 [Features](#-features) • [Installation](#-installation) • [Customization](#%EF%B8%8F-customization) • [Building](#-building-from-source)
@@ -19,7 +19,7 @@
 
 Ever accidentally typed in ALL CAPS because you didn't notice Caps Lock was on? Or struggled to see if Num Lock is enabled on your keyboard? This lightweight utility solves that with a beautiful, non-intrusive on-screen display.
 
-Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator** uses **under 2 MB** while delivering a polished, professional experience.
+Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator** uses just **1.6 MB** while delivering a polished, professional experience.
 
 ---
 
@@ -32,8 +32,8 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🔍 **Perfect Clarity** - Semi-transparent background with 100% opaque text
 
 ### Performance
-- ⚡ **Ultra-Lightweight** - Just 234 KB executable size
-- 🚀 **Minimal Memory** - Uses under 2 MB of RAM
+- ⚡ **Ultra-Lightweight** - Just 231 KB executable size
+- 🚀 **Minimal Memory** - Uses only 1.6 MB of RAM
 - 💨 **Instant Startup** - Launches in milliseconds
 - 🎯 **Zero Dependencies** - No .NET framework or runtime required
 
@@ -41,9 +41,8 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🖥️ **Multi-Monitor Support** - Automatically displays on the active screen
 - 🎮 **Game-Friendly** - Click-through window that never steals focus
 - 🔝 **Always Visible** - Stays on top of all applications
-- 🔄 **Optional Auto-Start** - Prompts you on first run to enable Windows startup
+- 🔄 **Auto-Start** - Automatically launches with Windows
 - 🎯 **Text Stabilization** - No wiggling when toggling between ON/OFF
-- ⚙️ **Configurable Keys** - Enable/disable individual lock keys (Caps, Num, Scroll)
 
 ### Compatibility
 - ✅ **Windows 11** - Fully supported
@@ -68,24 +67,9 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 ### Quick Start (Recommended)
 
 1. **Download** the latest release from the [Releases](../../releases) page
-2. **Extract** `OsdLockIndicator.exe` to any folder (we recommend creating a dedicated folder)
+2. **Extract** `OsdLockIndicator.exe` to any folder
 3. **Run** the executable
-4. **Choose** whether to start automatically with Windows when prompted
-
-That's it! The indicator is now running.
-
-### First Run Experience
-
-On first launch, you'll see a prompt asking:
-
-> "Would you like OSD Lock Indicator to start automatically with Windows?"
-
-- Click **Yes** to have it launch automatically every time Windows starts
-- Click **No** to run it manually when needed
-
-You can change this later by running the uninstall command and re-running the program.
-
----
+4. That's it! The indicator will start automatically and add itself to Windows startup
 
 ## 🗑️ Uninstall
 
@@ -124,7 +108,7 @@ If you've already deleted the file without running the uninstall command:
 
 1. Press `Win + R`, type `regedit`, press Enter
 2. Navigate to: `HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`
-3. Find and delete the `OsdLockIndicator` entry (if it exists)
+3. Find and delete the `OsdLockIndicator` entry
 4. Close Registry Editor
 5. Open Task Manager (`Ctrl+Shift+Esc`) and end any `OsdLockIndicator.exe` processes
 
@@ -132,43 +116,7 @@ If you've already deleted the file without running the uninstall command:
 
 ## ⚙️ Customization
 
-You can customize the appearance and behavior by modifying the constants at the top of the source code and rebuilding:
-
-### Key Detection Settings
-
-Choose which lock keys trigger the on-screen display:
-
-```cpp
-// Key Detection Settings (true = enabled, false = disabled)
-constexpr bool ENABLE_CAPSLOCK = true;    // Show indicator for Caps Lock
-constexpr bool ENABLE_NUMLOCK = true;     // Show indicator for Num Lock
-constexpr bool ENABLE_SCROLLLOCK = false; // Show indicator for Scroll Lock (disabled by default)
-```
-
-**Examples:**
-
-**Caps Lock only:**
-```cpp
-constexpr bool ENABLE_CAPSLOCK = true;
-constexpr bool ENABLE_NUMLOCK = false;
-constexpr bool ENABLE_SCROLLLOCK = false;
-```
-
-**All three keys enabled:**
-```cpp
-constexpr bool ENABLE_CAPSLOCK = true;
-constexpr bool ENABLE_NUMLOCK = true;
-constexpr bool ENABLE_SCROLLLOCK = true;
-```
-
-**Num Lock and Scroll Lock only (no Caps Lock):**
-```cpp
-constexpr bool ENABLE_CAPSLOCK = false;
-constexpr bool ENABLE_NUMLOCK = true;
-constexpr bool ENABLE_SCROLLLOCK = true;
-```
-
-### Visual Settings
+You can customize the appearance by modifying the constants at the top of the source code and rebuilding:
 
 ```cpp
 // Window Dimensions
@@ -293,22 +241,16 @@ Most modern games support borderless windowed mode natively.
 ### Keyboard Hook
 - **Type:** Low-level keyboard hook (`WH_KEYBOARD_LL`)
 - **Scope:** Global - detects all keyboard input
-- **Keys Monitored:** Caps Lock (`VK_CAPITAL`), Num Lock (`VK_NUMLOCK`), Scroll Lock (`VK_SCROLL`)
+- **Keys Monitored:** Caps Lock (`VK_CAPITAL`), Num Lock (`VK_NUMLOCK`)
 - **State Detection:** Uses `GetKeyState` to accurately read lock state
-- **Configurable:** Each key can be individually enabled or disabled
-
-### Application Manifest & Version Info
-The application includes:
-- **Version Resource:** Complete file version information for Windows
-- **Application Manifest:** Declares DPI awareness and Windows compatibility
-- **UAC Level:** Runs as standard user (no elevation required)
 
 ### Performance Benchmarks
 
 | Metric | Value |
 |--------|-------|
-| Executable Size | 234 KB |
-| RAM Usage | <2 MB |
+| Executable Size | 231 KB |
+| RAM Usage (Idle) | 1.6 MB |
+| RAM Usage (Active) | 1.7 MB |
 | CPU Usage (Idle) | <0.1% |
 | CPU Usage (Animating) | ~0.3% |
 | Startup Time | ~15 ms |
@@ -320,43 +262,14 @@ The application includes:
 
 | Feature | OSD Lock Indicator | Typical Alternatives |
 |---------|-------------------|---------------------|
-| **File Size** | 234 KB | 2-15 MB |
-| **RAM Usage** | <2 MB | 8-25 MB |
+| **File Size** | 231 KB | 2-15 MB |
+| **RAM Usage** | 1.6 MB | 8-25 MB |
 | **Dependencies** | None | .NET, Java, or other runtimes |
 | **Visual Quality** | Anti-aliased, smooth | Varies |
 | **Startup Time** | 15 ms | 200-500 ms |
 | **Multi-Monitor** | ✅ Yes | Sometimes |
 | **Game Compatible** | ✅ Yes | Sometimes |
-| **Auto-Start** | ✅ Optional (user choice) | Usually forced |
-| **Scroll Lock Support** | ✅ Yes (configurable) | Rarely |
-
----
-
-## 🛡️ Antivirus False Positives
-
-### Why Some Antivirus Software May Flag This Program
-
-This program uses techniques that are common in both legitimate utilities and malware:
-
-1. **Low-level keyboard hook** - Used to detect lock key states, but also used by keyloggers
-2. **Registry modification** - Adds itself to startup (with user permission), a common persistence technique
-3. **Process enumeration** - Used for the uninstall feature to find running instances
-
-### How We Minimize False Positives
-
-- ✅ **User-prompted startup registration** - Never silently adds itself to startup
-- ✅ **Application manifest** - Declares intentions and compatibility
-- ✅ **Version information** - Complete metadata embedded in executable
-- ✅ **Open source** - Full source code available for review
-
-### If Your Antivirus Flags It
-
-1. **Check VirusTotal** - Upload the file to [VirusTotal](https://www.virustotal.com) to see detection rates
-2. **Add an exception** - Whitelist `OsdLockIndicator.exe` in your antivirus settings
-3. **Build from source** - Clone the repository and build it yourself to verify
-4. **Report false positive** - Help improve detection by reporting to your AV vendor:
-   - [Microsoft](https://www.microsoft.com/en-us/wdsi/filesubmission)
-   - [Symantec](https://symsubmit.symantec.com/)
+| **Auto-Start** | ✅ Yes | ✅ Yes |
 
 ---
 
@@ -366,7 +279,7 @@ This program uses techniques that are common in both legitimate utilities and ma
 **A:** Yes! It works with any keyboard - built-in laptop keyboards, USB keyboards, Bluetooth keyboards, etc.
 
 ### Q: Will this slow down my computer?
-**A:** No. It uses under 2 MB of RAM and barely any CPU. It's more efficient than most system tray icons.
+**A:** No. It uses only 1.6 MB of RAM and barely any CPU. It's more efficient than most system tray icons.
 
 ### Q: Can I use this on multiple monitors?
 **A:** Yes! The indicator automatically appears on whichever monitor your mouse cursor is on.
@@ -374,38 +287,26 @@ This program uses techniques that are common in both legitimate utilities and ma
 ### Q: Does this work with games?
 **A:** Yes, for games running in Borderless Windowed or Windowed mode. Exclusive fullscreen may hide the overlay.
 
-### Q: How do I change the auto-start setting?
-**A:** Run the uninstall command (`.\OsdLockIndicator.exe /uninstall`) to remove from startup, then run the program again to be prompted.
+### Q: How do I stop it from auto-starting?
+**A:** Run the uninstall command (`.\OsdLockIndicator.exe /uninstall`) which will remove it from startup and terminate the process. Then delete the file.
 
 ### Q: Is this safe? My antivirus flagged it.
-**A:** Yes, it's completely safe. Some antivirus programs flag software that uses keyboard hooks as potentially suspicious. This is a false positive - the source code is available for review. See the [Antivirus False Positives](#-antivirus-false-positives) section above.
+**A:** Yes, it's completely safe. Some antivirus programs flag any software that uses keyboard hooks as potentially suspicious. This is a false positive - the source code is available for review.
 
 ### Q: Can I customize the colors?
 **A:** Currently, colors are hardcoded (green for ON, red for OFF, white for label). You can modify the source code and rebuild to change them.
 
-### Q: Why is Scroll Lock disabled by default?
-**A:** Scroll Lock is rarely used on modern systems, so it's disabled by default to avoid unnecessary notifications. You can enable it by setting `ENABLE_SCROLLLOCK = true` in the source code and rebuilding.
-
-### Q: How do I enable/disable specific keys?
-**A:** Modify the key detection settings at the top of `OsdLockIndicator.cpp`:
-```cpp
-constexpr bool ENABLE_CAPSLOCK = true;    // Set to false to disable
-constexpr bool ENABLE_NUMLOCK = true;     // Set to false to disable
-constexpr bool ENABLE_SCROLLLOCK = false; // Set to true to enable
-```
-Then rebuild the project.
+### Q: Why doesn't it show Scroll Lock?
+**A:** Scroll Lock is rarely used on modern systems. The code can be easily modified to include it if needed.
 
 ### Q: How do I uninstall this properly?
-**A:** Run the uninstall command to properly remove it:
+**A:** Don't just delete the file! First, run the uninstall command to properly remove it:
 1. Navigate to the folder with the .exe
 2. Right-click on empty space → **"Open in Terminal"**
 3. Run: `.\OsdLockIndicator.exe /uninstall` in PowerShell or `OsdLockIndicator.exe /uninstall` in CMD
 4. Then delete the file
 
 The uninstall command will automatically terminate any running processes and clean up the registry entry.
-
-### Q: I accidentally clicked "No" on the startup prompt. How do I enable auto-start?
-**A:** Run the uninstall command (even if it's not in startup, it won't hurt), then run the program again. You'll be prompted again.
 
 ---
 
@@ -416,19 +317,17 @@ The uninstall command will automatically terminate any running processes and cle
 - ✅ **No admin required** - Runs with standard user privileges
 - ✅ **Open source** - Full source code available for review
 - ✅ **Minimal permissions** - Only uses keyboard hook and window creation
-- ✅ **User consent** - Asks before adding to Windows startup
 
 **What it does:**
-- Monitors Caps Lock, Num Lock, and Scroll Lock key states (configurable)
+- Monitors Caps Lock and Num Lock key states
 - Displays an on-screen notification
-- Optionally adds itself to Windows startup registry (with user permission)
+- Adds itself to Windows startup registry (`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`)
 
 **What it doesn't do:**
 - Capture or log keystrokes
 - Send data over the network
 - Modify system files
 - Require elevated permissions
-- Silently add itself to startup
 
 ---
 
@@ -444,10 +343,6 @@ The uninstall command will automatically terminate any running processes and cle
    - The indicator appears 75 pixels from the bottom of your screen
    - Try pressing Caps Lock/Num Lock with Task Manager open to see if it appears
 
-3. **Check if the key is enabled:**
-   - By default, Scroll Lock is disabled
-   - If you want Scroll Lock notifications, you need to rebuild with `ENABLE_SCROLLLOCK = true`
-
 ### Multiple instances are running
 
 - Only one instance should run at a time due to mutex protection
@@ -460,7 +355,6 @@ The uninstall command will automatically terminate any running processes and cle
 
 ### Antivirus is blocking it
 
-- See the [Antivirus False Positives](#-antivirus-false-positives) section
 - Add an exception for `OsdLockIndicator.exe` in your antivirus software
 - This is a false positive - keyboard hooks are flagged by some antivirus programs
 
