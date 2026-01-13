@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 //
 //  OSD LOCK INDICATOR - Customizable On-Screen Display for Caps/Num Lock
 //
@@ -140,6 +140,11 @@ void UpdateOSD();
 void CenterOnActiveMonitor(HWND hwnd);
 void ShowIndicator();
 bool RemoveFromStartup();
+void CleanupAllSettings();
+bool IsInStartup();
+bool AddToStartup();
+bool HasCompletedSetup();
+void MarkSetupCompleted();
 bool TerminateOtherInstances();
 
 // =============================================================================
@@ -258,6 +263,78 @@ bool RemoveFromStartup()
     return (result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
 }
 
+void CleanupAllSettings()
+{
+    // Remove our app settings key (so reinstall shows setup prompt again)
+    RegDeleteKeyW(HKEY_CURRENT_USER, L"SOFTWARE\\OsdLockIndicator");
+}
+
+bool IsInStartup()
+{
+    HKEY hKey;
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0, KEY_QUERY_VALUE, &hKey);
+
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
+
+    result = RegQueryValueExW(hKey, L"OsdLockIndicator", NULL, NULL, NULL, NULL);
+    RegCloseKey(hKey);
+
+    return (result == ERROR_SUCCESS);
+}
+
+bool AddToStartup()
+{
+    HKEY hKey;
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+        0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+
+        wchar_t exePath[MAX_PATH];
+        GetModuleFileNameW(NULL, exePath, MAX_PATH);
+
+        LONG result = RegSetValueExW(hKey, L"OsdLockIndicator", 0, REG_SZ,
+            (LPBYTE)exePath, (DWORD)((wcslen(exePath) + 1) * sizeof(wchar_t)));
+
+        RegCloseKey(hKey);
+        return (result == ERROR_SUCCESS);
+    }
+    return false;
+}
+
+bool HasCompletedSetup()
+{
+    HKEY hKey;
+    LONG result = RegOpenKeyExW(HKEY_CURRENT_USER,
+        L"SOFTWARE\\OsdLockIndicator",
+        0, KEY_QUERY_VALUE, &hKey);
+
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
+
+    result = RegQueryValueExW(hKey, L"SetupCompleted", NULL, NULL, NULL, NULL);
+    RegCloseKey(hKey);
+
+    return (result == ERROR_SUCCESS);
+}
+
+void MarkSetupCompleted()
+{
+    HKEY hKey;
+    DWORD disposition;
+
+    if (RegCreateKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\OsdLockIndicator",
+        0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &disposition) == ERROR_SUCCESS) {
+
+        DWORD value = 1;
+        RegSetValueExW(hKey, L"SetupCompleted", 0, REG_DWORD, (LPBYTE)&value, sizeof(DWORD));
+        RegCloseKey(hKey);
+    }
+}
+
 // =============================================================================
 // Main Entry Point
 // =============================================================================
@@ -283,12 +360,14 @@ int WINAPI WinMain(
         }
 
         bool removedStartup = RemoveFromStartup();
+        CleanupAllSettings();
 
         if (removedStartup) {
             MessageBoxW(NULL,
                 L"OSD Lock Indicator has been uninstalled:\n\n"
-                L"✓ Running processes terminated\n"
-                L"✓ Removed from Windows startup\n\n"
+                L"[OK] Running processes terminated\n"
+                L"[OK] Removed from Windows startup\n"
+                L"[OK] Settings cleared\n\n"
                 L"You can now safely delete the executable file.",
                 L"Uninstall Complete",
                 MB_OK | MB_ICONINFORMATION);
@@ -305,6 +384,47 @@ int WINAPI WinMain(
         return 0;
     }
 
+    // --- Handle Install Command (force show startup prompt) ---
+    if (cmdLine.find("/install") != std::string::npos ||
+        cmdLine.find("--install") != std::string::npos ||
+        cmdLine.find("-install") != std::string::npos) {
+
+        int result = MessageBoxW(NULL,
+            L"Would you like OSD Lock Indicator to start automatically with Windows?\n\n"
+            L"You can change this later by running:\n"
+            L"- OsdLockIndicator.exe /install   (to enable)\n"
+            L"- OsdLockIndicator.exe /uninstall (to disable)",
+            L"OSD Lock Indicator - Setup",
+            MB_YESNO | MB_ICONQUESTION);
+
+        if (result == IDYES) {
+            if (AddToStartup()) {
+                MessageBoxW(NULL,
+                    L"[OK] OSD Lock Indicator will now start with Windows.",
+                    L"Setup Complete",
+                    MB_OK | MB_ICONINFORMATION);
+            }
+            else {
+                MessageBoxW(NULL,
+                    L"Could not add to Windows startup.\n"
+                    L"Please try running as administrator.",
+                    L"Setup Error",
+                    MB_OK | MB_ICONWARNING);
+            }
+        }
+        else {
+            RemoveFromStartup();
+            MessageBoxW(NULL,
+                L"[OK] OSD Lock Indicator will NOT start with Windows.\n\n"
+                L"You can run the program manually when needed.",
+                L"Setup Complete",
+                MB_OK | MB_ICONINFORMATION);
+        }
+
+        MarkSetupCompleted();
+        return 0;
+    }
+
     // --- Initialize GDI+ ---
     GdiplusStartupInput gdiplusStartupInput;
     GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
@@ -315,18 +435,22 @@ int WINAPI WinMain(
         return 0;
     }
 
-    // --- Add to Windows Startup ---
-    HKEY hKey;
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
-        0, KEY_SET_VALUE, &hKey) == ERROR_SUCCESS) {
+    // --- First Run: Ask User About Windows Startup ---
+    if (!HasCompletedSetup()) {
+        int result = MessageBoxW(NULL,
+            L"Welcome to OSD Lock Indicator!\n\n"
+            L"Would you like this program to start automatically with Windows?\n\n"
+            L"You can change this later by running:\n"
+            L"- OsdLockIndicator.exe /install   (to enable)\n"
+            L"- OsdLockIndicator.exe /uninstall (to disable)",
+            L"OSD Lock Indicator - First Run Setup",
+            MB_YESNO | MB_ICONQUESTION);
 
-        wchar_t exePath[MAX_PATH];
-        GetModuleFileNameW(NULL, exePath, MAX_PATH);
+        if (result == IDYES) {
+            AddToStartup();
+        }
 
-        RegSetValueExW(hKey, L"OsdLockIndicator", 0, REG_SZ,
-            (LPBYTE)exePath, (DWORD)((wcslen(exePath) + 1) * sizeof(wchar_t)));
-
-        RegCloseKey(hKey);
+        MarkSetupCompleted();
     }
 
     // --- Create Window Class ---
