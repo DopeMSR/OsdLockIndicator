@@ -1,1 +1,5 @@
-101 ICON "app.ico"
+// Icon resource
+101 ICON "OsdLockIndicator.ico"
+
+// Version information
+#include "version.rc"
