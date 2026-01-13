@@ -432,6 +432,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
                 ShowWindow(g_hwndOSD, SW_SHOWNOACTIVATE);
             }
             else if (g_animState == STATE_VISIBLE || g_animState == STATE_FADING_IN) {
+                CenterOnActiveMonitor(g_hwndOSD);
                 g_currentAlpha = 255;
                 g_animState = STATE_VISIBLE;
                 UpdateOSD();
