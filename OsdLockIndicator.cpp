@@ -7,16 +7,23 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// Target Windows 10 version 1703+ for DPI awareness APIs
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00
+#endif
+
 #include <windows.h>
 #include <string>
 #include <gdiplus.h>
 #include <tlhelp32.h>
 #include <psapi.h>
+#include <shellscalingapi.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "gdiplus.lib")
 #pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "shcore.lib")
 
 using namespace Gdiplus;
 
@@ -347,6 +354,9 @@ int WINAPI WinMain(
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nShowCmd);
+
+    // --- Enable Per-Monitor DPI Awareness (fixes scaling on high-DPI displays) ---
+    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // --- Handle Uninstall Command ---
     std::string cmdLine(lpCmdLine);
