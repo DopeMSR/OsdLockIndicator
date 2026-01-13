@@ -28,57 +28,57 @@ using namespace Gdiplus;
 // WINDOW SIZE & SHAPE
 // =============================================================================
 
-constexpr int OSD_WIDTH = 175;    // Width of the indicator (pixels)
-constexpr int OSD_HEIGHT = 60;     // Height of the indicator (pixels)
-constexpr int CORNER_RADIUS = 20;     // Roundness of corners (0 = square)
+constexpr int OSD_WIDTH       = 175;    // Width of the indicator (pixels)
+constexpr int OSD_HEIGHT      = 60;     // Height of the indicator (pixels)
+constexpr int CORNER_RADIUS   = 20;     // Roundness of corners (0 = square)
 
 // =============================================================================
 // POSITION ON SCREEN
 // =============================================================================
 
-constexpr int DISTANCE_FROM_BOTTOM = 15;    // How far from the bottom of the screen (pixels)
-// Increase to move the indicator higher
+constexpr int DISTANCE_FROM_BOTTOM = 75;    // How far from the bottom of the screen (pixels)
+                                            // Increase to move the indicator higher
 
 // =============================================================================
 // COLORS - Format: (Alpha, Red, Green, Blue) - Values 0-255
 // =============================================================================
 
 // Background
-constexpr int BG_ALPHA = 80;     // Background transparency (0=invisible, 255=solid)
-constexpr int BG_RED = 0;      // Background red component
-constexpr int BG_GREEN = 0;      // Background green component  
-constexpr int BG_BLUE = 0;      // Background blue component
+constexpr int BG_ALPHA        = 80;     // Background transparency (0=invisible, 255=solid)
+constexpr int BG_RED          = 0;      // Background red component
+constexpr int BG_GREEN        = 0;      // Background green component  
+constexpr int BG_BLUE         = 0;      // Background blue component
 
 // Text Label ("CapsLock:" / "NumLock:")
-constexpr int TEXT_RED = 255;    // Label text red
-constexpr int TEXT_GREEN = 255;    // Label text green
-constexpr int TEXT_BLUE = 255;    // Label text blue (255,255,255 = white)
+constexpr int TEXT_RED        = 255;    // Label text red
+constexpr int TEXT_GREEN      = 255;    // Label text green
+constexpr int TEXT_BLUE       = 255;    // Label text blue (255,255,255 = white)
 
 // "ON" Status Color (default: soft green)
-constexpr int ON_RED = 76;     // ON text red
-constexpr int ON_GREEN = 217;    // ON text green
-constexpr int ON_BLUE = 100;    // ON text blue
+constexpr int ON_RED          = 76;     // ON text red
+constexpr int ON_GREEN        = 217;    // ON text green
+constexpr int ON_BLUE         = 100;    // ON text blue
 
 // "OFF" Status Color (default: soft coral-red)
-constexpr int OFF_RED = 255;    // OFF text red
-constexpr int OFF_GREEN = 95;     // OFF text green
-constexpr int OFF_BLUE = 87;     // OFF text blue
+constexpr int OFF_RED         = 255;    // OFF text red
+constexpr int OFF_GREEN       = 95;     // OFF text green
+constexpr int OFF_BLUE        = 87;     // OFF text blue
 
 // =============================================================================
 // ANIMATION TIMING
 // =============================================================================
 
-constexpr int FADE_SPEED = 25;     // Fade speed (higher = faster, 1-50 recommended)
-constexpr int ANIM_INTERVAL = 10;     // Milliseconds between animation frames
-constexpr int DISPLAY_TIME = 1500;   // How long to show before fading out (milliseconds)
+constexpr int FADE_SPEED      = 25;     // Fade speed (higher = faster, 1-50 recommended)
+constexpr int ANIM_INTERVAL   = 10;     // Milliseconds between animation frames
+constexpr int DISPLAY_TIME    = 1500;   // How long to show before fading out (milliseconds)
 constexpr bool EASE_ANIMATION = true;   // true = smooth easing, false = linear fade
 
 // =============================================================================
 // FONT SETTINGS
 // =============================================================================
 
-constexpr float FONT_SIZE = 14.0f;          // Font size in points
-const wchar_t* FONT_NAME = L"Segoe UI";    // Font family name
+constexpr float FONT_SIZE     = 14.0f;          // Font size in points
+const wchar_t* FONT_NAME      = L"Segoe UI";    // Font family name
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -157,21 +157,19 @@ inline int CalculateNextAlpha(int current, int target, bool fadeIn)
         // Linear animation
         if (fadeIn) {
             return min(current + FADE_SPEED, target);
-        }
-        else {
+        } else {
             return max(current - FADE_SPEED, target);
         }
     }
-
+    
     // Ease-out quadratic for smooth deceleration
     float progress = static_cast<float>(abs(target - current)) / 255.0f;
     int step = static_cast<int>(FADE_SPEED * (0.5f + progress * 1.5f));
     step = max(step, 3); // Minimum step to ensure animation completes
-
+    
     if (fadeIn) {
         return min(current + step, target);
-    }
-    else {
+    } else {
         return max(current - step, target);
     }
 }
@@ -325,7 +323,7 @@ void MarkSetupCompleted()
 {
     HKEY hKey;
     DWORD disposition;
-
+    
     if (RegCreateKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\OsdLockIndicator",
         0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &disposition) == ERROR_SUCCESS) {
 
@@ -371,8 +369,7 @@ int WINAPI WinMain(
                 L"You can now safely delete the executable file.",
                 L"Uninstall Complete",
                 MB_OK | MB_ICONINFORMATION);
-        }
-        else {
+        } else {
             MessageBoxW(NULL,
                 L"Processes were terminated, but could not remove from startup registry.\n\n"
                 L"Please manually remove from:\n"
@@ -403,16 +400,14 @@ int WINAPI WinMain(
                     L"[OK] OSD Lock Indicator will now start with Windows.",
                     L"Setup Complete",
                     MB_OK | MB_ICONINFORMATION);
-            }
-            else {
+            } else {
                 MessageBoxW(NULL,
                     L"Could not add to Windows startup.\n"
                     L"Please try running as administrator.",
                     L"Setup Error",
                     MB_OK | MB_ICONWARNING);
             }
-        }
-        else {
+        } else {
             RemoveFromStartup();
             MessageBoxW(NULL,
                 L"[OK] OSD Lock Indicator will NOT start with Windows.\n\n"
@@ -449,7 +444,7 @@ int WINAPI WinMain(
         if (result == IDYES) {
             AddToStartup();
         }
-
+        
         MarkSetupCompleted();
     }
 
@@ -488,7 +483,7 @@ int WINAPI WinMain(
     if (g_keyboardHook) UnhookWindowsHookEx(g_keyboardHook);
     GdiplusShutdown(g_gdiplusToken);
     if (mutex) { ReleaseMutex(mutex); CloseHandle(mutex); }
-
+    
     return 0;
 }
 
@@ -579,7 +574,7 @@ void UpdateOSD()
     SIZE size = { OSD_WIDTH, OSD_HEIGHT };
     POINT ptSrc = { 0, 0 };
     POINT ptDst = { 0, 0 };
-
+    
     RECT rc;
     GetWindowRect(g_hwndOSD, &rc);
     ptDst.x = rc.left;
@@ -608,8 +603,7 @@ void ShowIndicator()
         g_animState = STATE_FADING_IN;
         SetTimer(g_hwndOSD, TIMER_ANIM, ANIM_INTERVAL, NULL);
         ShowWindow(g_hwndOSD, SW_SHOWNOACTIVATE);
-    }
-    else if (g_animState == STATE_VISIBLE || g_animState == STATE_FADING_IN) {
+    } else if (g_animState == STATE_VISIBLE || g_animState == STATE_FADING_IN) {
         // Already visible - just reset the stay timer
         g_currentAlpha = 255;
         g_animState = STATE_VISIBLE;
@@ -625,14 +619,14 @@ void ShowIndicator()
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
-
+    
     case WM_KEYSTATE_CHANGED:
     {
         UINT vkCode = static_cast<UINT>(wParam);
         const wchar_t* keyName = (vkCode == VK_CAPITAL) ? L"CapsLock" : L"NumLock";
         bool isOn = (GetKeyState(vkCode) & 0x0001) != 0;
         g_text = std::wstring(keyName) + L": " + (isOn ? L"ON" : L"OFF");
-
+        
         ShowIndicator();
         return 0;
     }
@@ -670,7 +664,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         return 0;
     }
-
+    
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
