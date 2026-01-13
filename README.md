@@ -4,9 +4,9 @@
 
 **A beautiful, ultra-lightweight Windows utility that displays an elegant on-screen notification when Caps Lock or Num Lock is toggled.**
 
-![Platform](https://img.shields.io/badge/platform-Windows%2011-blue)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-blue)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-orange)
-![Size](https://img.shields.io/badge/size-231%20KB-green)
+![Size](https://img.shields.io/badge/size-~230%20KB-green)
 ![License](https://img.shields.io/badge/license-MIT-brightgreen)
 
 [Features](#-features) • [Installation](#-installation) • [Customization](#%EF%B8%8F-customization) • [Building](#-building-from-source)
@@ -19,7 +19,7 @@
 
 Ever accidentally typed in ALL CAPS because you didn't notice Caps Lock was on? Or struggled to see if Num Lock is enabled on your keyboard? This lightweight utility solves that with a beautiful, non-intrusive on-screen display.
 
-Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator** uses just **1.6 MB** while delivering a polished, professional experience.
+Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator** uses just **~1.6 MB** while delivering a polished, professional experience.
 
 ---
 
@@ -28,12 +28,12 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 ### Visual Excellence
 - 🎨 **Beautiful Design** - Smooth rounded corners with anti-aliased rendering
 - 🌈 **Color-Coded Status** - Green for ON, Red for OFF
-- ✨ **Smooth Animations** - Elegant fade-in and fade-out transitions
+- ✨ **Smooth Animations** - Elegant fade-in and fade-out transitions with easing
 - 🔍 **Perfect Clarity** - Semi-transparent background with 100% opaque text
 
 ### Performance
-- ⚡ **Ultra-Lightweight** - Just 231 KB executable size
-- 🚀 **Minimal Memory** - Uses only 1.6 MB of RAM
+- ⚡ **Ultra-Lightweight** - ~230 KB executable size
+- 🚀 **Minimal Memory** - Uses only ~1.6 MB of RAM
 - 💨 **Instant Startup** - Launches in milliseconds
 - 🎯 **Zero Dependencies** - No .NET framework or runtime required
 
@@ -41,12 +41,12 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🖥️ **Multi-Monitor Support** - Automatically displays on the active screen
 - 🎮 **Game-Friendly** - Click-through window that never steals focus
 - 🔝 **Always Visible** - Stays on top of all applications
-- 🔄 **Auto-Start** - Automatically launches with Windows
+- 🔄 **Optional Auto-Start** - Choose whether to launch with Windows on first run
 - 🎯 **Text Stabilization** - No wiggling when toggling between ON/OFF
 
 ### Compatibility
-- ✅ **Windows 11** - Fully supported
-- ✅ **High DPI Displays** - Crystal clear on any resolution
+- ✅ **Windows 10/11** - Fully supported
+- ✅ **High DPI Displays** - Works on any resolution and scaling
 - ✅ **Borderless Windowed Games** - Works seamlessly
 - ✅ **Multiple Keyboards** - Detects any keyboard input
 
@@ -69,7 +69,21 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 1. **Download** the latest release from the [Releases](../../releases) page
 2. **Extract** `OsdLockIndicator.exe` to any folder
 3. **Run** the executable
-4. That's it! The indicator will start automatically and add itself to Windows startup
+4. **Choose** whether to start automatically with Windows when prompted
+5. That's it! The indicator is now running.
+
+### First Run Setup
+
+On first launch, you'll be asked:
+
+> "Would you like this program to start automatically with Windows?"
+
+- Click **Yes** to add to Windows startup
+- Click **No** to run manually when needed
+
+You can change this preference anytime using the `/install` command.
+
+---
 
 ## 🗑️ Uninstall
 
@@ -78,29 +92,17 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 Simply run the uninstall command - it will automatically:
 1. Terminate any running instances
 2. Remove itself from Windows startup
-3. Allow you to delete the file
+3. Clear all settings
 
 **Steps:**
 
-1. **Navigate to the folder:**
-   - Open the folder where `OsdLockIndicator.exe` is located
-   - Right-click on empty space in the folder
-   - Select **"Open in Terminal"**
-
-2. **Run the uninstall command:**
+1. **Navigate to the folder** where `OsdLockIndicator.exe` is located
+2. **Open Terminal:** Right-click on empty space → Select **"Open in Terminal"**
+3. **Run the uninstall command:**
    ```powershell
    .\OsdLockIndicator.exe /uninstall
    ```
-   
-   A message will appear confirming:
-   - ✓ Running processes terminated
-   - ✓ Removed from Windows startup
-
-3. **Delete the file:**
-   - Close the terminal
-   - Delete `OsdLockIndicator.exe`
-
-**Note:** You don't need to manually end the process in Task Manager anymore - the uninstall command does this automatically!
+4. **Delete the file** after the confirmation message appears
 
 ### Alternative: Manual Removal
 
@@ -109,8 +111,20 @@ If you've already deleted the file without running the uninstall command:
 1. Press `Win + R`, type `regedit`, press Enter
 2. Navigate to: `HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`
 3. Find and delete the `OsdLockIndicator` entry
-4. Close Registry Editor
+4. Also delete: `HKEY_CURRENT_USER\SOFTWARE\OsdLockIndicator` (if exists)
 5. Open Task Manager (`Ctrl+Shift+Esc`) and end any `OsdLockIndicator.exe` processes
+
+---
+
+## 💻 Command Line Options
+
+| Command | Description |
+|---------|-------------|
+| `OsdLockIndicator.exe` | Normal launch |
+| `OsdLockIndicator.exe /install` | Change startup preference |
+| `OsdLockIndicator.exe /uninstall` | Complete removal |
+
+**Note:** `/install`, `--install`, and `-install` all work (same for uninstall).
 
 ---
 
@@ -119,28 +133,54 @@ If you've already deleted the file without running the uninstall command:
 You can customize the appearance by modifying the constants at the top of the source code and rebuilding:
 
 ```cpp
-// Window Dimensions
-constexpr int OSD_WIDTH = 175;        // Width in pixels
-constexpr int OSD_HEIGHT = 60;        // Height in pixels
-constexpr int CORNER_RADIUS = 20;     // Roundness of corners
+// =============================================================================
+// WINDOW SIZE & SHAPE
+// =============================================================================
 
-// Visual Settings
-constexpr int BG_ALPHA_MAX = 80;      // Background transparency (0-255)
-                                      // Lower = more transparent
-                                      
-constexpr int SCREEN_HEIGHT = 75;     // Distance from bottom of screen
+constexpr int OSD_WIDTH       = 175;    // Width of the indicator (pixels)
+constexpr int OSD_HEIGHT      = 60;     // Height of the indicator (pixels)
+constexpr int CORNER_RADIUS   = 20;     // Roundness of corners (0 = square)
 
-// Animation Settings
-constexpr int FADE_SPEED = 25;        // Fade speed (higher = faster)
-constexpr int ANIM_DELAY = 10;        // Animation frame delay (ms)
-constexpr int STAY_TIME = 1500;       // Display duration (ms)
+// =============================================================================
+// POSITION ON SCREEN
+// =============================================================================
+
+constexpr int DISTANCE_FROM_BOTTOM = 75;    // How far from the bottom of the screen (pixels)
+
+// =============================================================================
+// COLORS - Format: (Red, Green, Blue) - Values 0-255
+// =============================================================================
+
+// Background
+constexpr int BG_ALPHA        = 80;     // Background transparency (0=invisible, 255=solid)
+constexpr int BG_RED          = 0;      // Background red component
+constexpr int BG_GREEN        = 0;      // Background green component  
+constexpr int BG_BLUE         = 0;      // Background blue component
+
+// "ON" Status Color (default: soft green)
+constexpr int ON_RED          = 76;
+constexpr int ON_GREEN        = 217;
+constexpr int ON_BLUE         = 100;
+
+// "OFF" Status Color (default: soft coral-red)
+constexpr int OFF_RED         = 255;
+constexpr int OFF_GREEN       = 95;
+constexpr int OFF_BLUE        = 87;
+
+// =============================================================================
+// ANIMATION TIMING
+// =============================================================================
+
+constexpr int FADE_SPEED      = 25;     // Fade speed (higher = faster, 1-50 recommended)
+constexpr int DISPLAY_TIME    = 1500;   // How long to show before fading out (milliseconds)
+constexpr bool EASE_ANIMATION = true;   // true = smooth easing, false = linear fade
 ```
 
 ### Customization Examples
 
 **More Transparent Background:**
 ```cpp
-constexpr int BG_ALPHA_MAX = 50;  // Very transparent
+constexpr int BG_ALPHA = 50;  // Very transparent
 ```
 
 **Larger Display:**
@@ -151,12 +191,17 @@ constexpr int OSD_HEIGHT = 80;
 
 **Longer Display Time:**
 ```cpp
-constexpr int STAY_TIME = 2500;  // 2.5 seconds
+constexpr int DISPLAY_TIME = 2500;  // 2.5 seconds
 ```
 
 **Higher on Screen:**
 ```cpp
-constexpr int SCREEN_HEIGHT = 150;  // 150px from bottom
+constexpr int DISTANCE_FROM_BOTTOM = 150;  // 150px from bottom
+```
+
+**Linear Animation (no easing):**
+```cpp
+constexpr bool EASE_ANIMATION = false;
 ```
 
 ---
@@ -165,8 +210,8 @@ constexpr int SCREEN_HEIGHT = 150;  // 150px from bottom
 
 ### Prerequisites
 
-- **Windows 11**
-- **Visual Studio 2026** (or later) with C++ Desktop Development workload
+- **Windows 10/11**
+- **Visual Studio 2022** (or later) with C++ Desktop Development workload
 - **Windows SDK** (included with Visual Studio)
 
 ### Build Steps
@@ -174,37 +219,28 @@ constexpr int SCREEN_HEIGHT = 150;  // 150px from bottom
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/DopeMSR/OsdLockIndicator.git
-   cd Osdlockindicator
+   cd OsdLockIndicator
    ```
 
 2. **Open in Visual Studio:**
-   - Open `OsdLockIndicator.sln`
-   - Or create a new C++ Windows Desktop Application project and add `OsdLockIndicator.cpp`
+   - Open `OsdLockIndicator.slnx`
 
 3. **Configure for Release:**
    - Set configuration to **Release**
    - Set platform to **x64**
 
 4. **Build:**
-   - Press `Ctrl+Alt+B` or select **Build → Build Solution**
+   - Press `Ctrl+Shift+B` or select **Build → Build Solution**
    - Find the executable in `x64/Release/OsdLockIndicator.exe`
 
-### Build Optimization Settings
+### Build Optimization Settings (Already Configured)
 
-For the smallest file size, ensure these settings are enabled:
+The project is pre-configured with optimal settings:
 
-**Project Properties → C/C++ → Optimization:**
-- Optimization: `Minimize Size (/O1)` or `Maximize Speed (/O2)`
-- Favor Size or Speed: `Favor small code (/Os)`
-
-**Project Properties → C/C++ → Code Generation:**
-- Runtime Library: `Multi-threaded (/MT)`
-
-**Project Properties → Linker → General:**
-- Enable Incremental Linking: `No`
-
-**Project Properties → Linker → Debugging:**
-- Generate Debug Info: `No`
+- **Optimization:** Minimize Size (/O1)
+- **Runtime Library:** Multi-threaded (/MT) - no runtime dependencies
+- **Incremental Linking:** Disabled
+- **Debug Info:** Disabled in Release
 
 ---
 
@@ -248,13 +284,12 @@ Most modern games support borderless windowed mode natively.
 
 | Metric | Value |
 |--------|-------|
-| Executable Size | 231 KB |
-| RAM Usage (Idle) | 1.6 MB |
-| RAM Usage (Active) | 1.7 MB |
+| Executable Size | ~230 KB |
+| RAM Usage (Idle) | ~1.6 MB |
+| RAM Usage (Active) | ~1.7 MB |
 | CPU Usage (Idle) | <0.1% |
 | CPU Usage (Animating) | ~0.3% |
 | Startup Time | ~15 ms |
-| GDI Objects | 4-6 |
 
 ---
 
@@ -262,14 +297,14 @@ Most modern games support borderless windowed mode natively.
 
 | Feature | OSD Lock Indicator | Typical Alternatives |
 |---------|-------------------|---------------------|
-| **File Size** | 231 KB | 2-15 MB |
-| **RAM Usage** | 1.6 MB | 8-25 MB |
+| **File Size** | ~230 KB | 2-15 MB |
+| **RAM Usage** | ~1.6 MB | 8-25 MB |
 | **Dependencies** | None | .NET, Java, or other runtimes |
 | **Visual Quality** | Anti-aliased, smooth | Varies |
-| **Startup Time** | 15 ms | 200-500 ms |
-| **Multi-Monitor** | ✅ Yes | Sometimes |
-| **Game Compatible** | ✅ Yes | Sometimes |
-| **Auto-Start** | ✅ Yes | ✅ Yes |
+| **Startup Time** | ~15 ms | 200-500 ms |
+| **Multi-Monitor** | Yes | Sometimes |
+| **Game Compatible** | Yes | Sometimes |
+| **Auto-Start** | Optional (user choice) | Often forced |
 
 ---
 
@@ -279,7 +314,7 @@ Most modern games support borderless windowed mode natively.
 **A:** Yes! It works with any keyboard - built-in laptop keyboards, USB keyboards, Bluetooth keyboards, etc.
 
 ### Q: Will this slow down my computer?
-**A:** No. It uses only 1.6 MB of RAM and barely any CPU. It's more efficient than most system tray icons.
+**A:** No. It uses only ~1.6 MB of RAM and barely any CPU. It's more efficient than most system tray icons.
 
 ### Q: Can I use this on multiple monitors?
 **A:** Yes! The indicator automatically appears on whichever monitor your mouse cursor is on.
@@ -287,26 +322,17 @@ Most modern games support borderless windowed mode natively.
 ### Q: Does this work with games?
 **A:** Yes, for games running in Borderless Windowed or Windowed mode. Exclusive fullscreen may hide the overlay.
 
-### Q: How do I stop it from auto-starting?
-**A:** Run the uninstall command (`.\OsdLockIndicator.exe /uninstall`) which will remove it from startup and terminate the process. Then delete the file.
+### Q: How do I change the auto-start setting?
+**A:** Run `OsdLockIndicator.exe /install` to change your preference.
 
 ### Q: Is this safe? My antivirus flagged it.
-**A:** Yes, it's completely safe. Some antivirus programs flag any software that uses keyboard hooks as potentially suspicious. This is a false positive - the source code is available for review.
+**A:** Yes, it's completely safe. Some antivirus programs flag any software that uses keyboard hooks as potentially suspicious. This is a false positive - the source code is available for review. You can submit it to your AV vendor as a false positive.
 
 ### Q: Can I customize the colors?
-**A:** Currently, colors are hardcoded (green for ON, red for OFF, white for label). You can modify the source code and rebuild to change them.
+**A:** Yes! Edit the color constants at the top of the source code and rebuild. All settings are clearly organized in the "USER SETTINGS" section.
 
 ### Q: Why doesn't it show Scroll Lock?
 **A:** Scroll Lock is rarely used on modern systems. The code can be easily modified to include it if needed.
-
-### Q: How do I uninstall this properly?
-**A:** Don't just delete the file! First, run the uninstall command to properly remove it:
-1. Navigate to the folder with the .exe
-2. Right-click on empty space → **"Open in Terminal"**
-3. Run: `.\OsdLockIndicator.exe /uninstall` in PowerShell or `OsdLockIndicator.exe /uninstall` in CMD
-4. Then delete the file
-
-The uninstall command will automatically terminate any running processes and clean up the registry entry.
 
 ---
 
@@ -321,7 +347,7 @@ The uninstall command will automatically terminate any running processes and cle
 **What it does:**
 - Monitors Caps Lock and Num Lock key states
 - Displays an on-screen notification
-- Adds itself to Windows startup registry (`HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Run`)
+- Optionally adds itself to Windows startup registry
 
 **What it doesn't do:**
 - Capture or log keystrokes
@@ -337,16 +363,16 @@ The uninstall command will automatically terminate any running processes and cle
 
 1. **Check if it's running:**
    - Open Task Manager (`Ctrl+Shift+Esc`)
-   - Look for `OsdLockIndicator.exe` in the Processes tab
+   - Look for `OSD Lock Indicator` in the Processes tab
 
 2. **Check display settings:**
    - The indicator appears 75 pixels from the bottom of your screen
-   - Try pressing Caps Lock/Num Lock with Task Manager open to see if it appears
+   - Move your mouse to the desired monitor before pressing Caps/Num Lock
 
 ### Multiple instances are running
 
 - Only one instance should run at a time due to mutex protection
-- If multiple instances appear in Task Manager, run the uninstall command to clean them up
+- If multiple instances appear in Task Manager, run `/uninstall` to clean up
 
 ### The indicator appears on the wrong monitor
 
@@ -357,42 +383,19 @@ The uninstall command will automatically terminate any running processes and cle
 
 - Add an exception for `OsdLockIndicator.exe` in your antivirus software
 - This is a false positive - keyboard hooks are flagged by some antivirus programs
+- Consider submitting to your AV vendor as a false positive
 
 ---
 
 ## 📝 License
 
-This project is licensed under the **MIT License**.
-
-```
-MIT License
-
-Copyright (c) 2025 Dope M.S.R. (github.com/DopeMSR)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
 **What this means:**
 - ✅ Free to use commercially
 - ✅ Free to modify and distribute
 - ✅ No warranty provided
-- ⚠️ Must include this license and copyright notice in copies
+- ⚠️ Must include license and copyright notice in copies
 
 ---
 
@@ -400,7 +403,7 @@ SOFTWARE.
 
 **Made with ❤️ and C++**
 
-*Developed with assistance from Claude (Anthropic) and Gemini (Google)*
+*Developed with assistance from Claude (Anthropic)*
 
 [⬆ Back to Top](#osd-lock-indicator)
 
