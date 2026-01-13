@@ -23,7 +23,7 @@ constexpr int OSD_WIDTH = 175;
 constexpr int OSD_HEIGHT = 60;
 constexpr int CORNER_RADIUS = 20;
 constexpr int BG_ALPHA_MAX = 80; // 0=Invisible, 255=Solid Black
-constexpr int SCREEN_HEIGHT = 75; // Changes the height of the indicator on the screen.
+constexpr int SCREEN_HEIGHT = 15; // Changes the height of the indicator on the screen.
 
 // Animation Settings
 constexpr int FADE_SPEED = 25;
@@ -260,7 +260,7 @@ int WINAPI WinMain(
     return 0;
 }
 
-// Moves the window to the monitor containing the mouse cursor
+// Moves the window to the monitor containing the mouse cursor (with DPI scaling)
 void CenterOnActiveMonitor(HWND hwnd)
 {
     POINT pt;
@@ -268,11 +268,25 @@ void CenterOnActiveMonitor(HWND hwnd)
         HMONITOR hMon = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
         MONITORINFO mi = { sizeof(MONITORINFO) };
         if (GetMonitorInfo(hMon, &mi)) {
-            int monWidth = mi.rcWork.right - mi.rcWork.left;
-            int x = mi.rcWork.left + (monWidth - OSD_WIDTH) / 2;
-            int y = mi.rcWork.bottom - SCREEN_HEIGHT; // Changes the height on where it is from the bottom of the screen. 
+            // Get DPI for this monitor
+            UINT dpiX = 96, dpiY = 96;
+            HDC hdc = GetDC(NULL);
+            if (hdc) {
+                dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+                dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+                ReleaseDC(NULL, hdc);
+            }
 
-            SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+            // Scale dimensions based on DPI (96 is 100% scaling)
+            float scale = static_cast<float>(dpiX) / 96.0f;
+            int scaledWidth = static_cast<int>(OSD_WIDTH * scale);
+            int scaledHeight = static_cast<int>(OSD_HEIGHT * scale);
+
+            int monWidth = mi.rcWork.right - mi.rcWork.left;
+            int x = mi.rcWork.left + (monWidth - scaledWidth) / 2;
+            int y = mi.rcWork.bottom - static_cast<int>(SCREEN_HEIGHT * scale) - scaledHeight;
+
+            SetWindowPos(hwnd, HWND_TOPMOST, x, y, scaledWidth, scaledHeight, SWP_NOACTIVATE);
         }
     }
 }
@@ -281,7 +295,20 @@ void UpdateOSD()
 {
     if (!g_hwndOSD) return;
 
-    Bitmap bmp(OSD_WIDTH, OSD_HEIGHT, PixelFormat32bppARGB);
+    // Get actual window size (may be scaled for DPI)
+    RECT windowRect;
+    GetWindowRect(g_hwndOSD, &windowRect);
+    int actualWidth = windowRect.right - windowRect.left;
+    int actualHeight = windowRect.bottom - windowRect.top;
+
+    // Use base dimensions if window not yet sized
+    if (actualWidth <= 0) actualWidth = OSD_WIDTH;
+    if (actualHeight <= 0) actualHeight = OSD_HEIGHT;
+
+    // Calculate scale factor for other elements
+    float scale = static_cast<float>(actualWidth) / static_cast<float>(OSD_WIDTH);
+
+    Bitmap bmp(actualWidth, actualHeight, PixelFormat32bppARGB);
     Graphics graphics(&bmp);
     graphics.SetSmoothingMode(SmoothingModeAntiAlias);
     graphics.SetTextRenderingHint(TextRenderingHintAntiAliasGridFit);
@@ -290,19 +317,21 @@ void UpdateOSD()
     // Draw Background
     SolidBrush bgBrush(Color(BG_ALPHA_MAX, 0, 0, 0));
 
-    // Create rounded rectangle path (on stack - no memory leak)
+    // Create rounded rectangle path (scaled)
     GraphicsPath path;
-    int d = CORNER_RADIUS * 2;
+    int scaledRadius = static_cast<int>(CORNER_RADIUS * scale);
+    int d = scaledRadius * 2;
     path.AddArc(0, 0, d, d, 180, 90);
-    path.AddArc(OSD_WIDTH - d, 0, d, d, 270, 90);
-    path.AddArc(OSD_WIDTH - d, OSD_HEIGHT - d, d, d, 0, 90);
-    path.AddArc(0, OSD_HEIGHT - d, d, d, 90, 90);
+    path.AddArc(actualWidth - d, 0, d, d, 270, 90);
+    path.AddArc(actualWidth - d, actualHeight - d, d, d, 0, 90);
+    path.AddArc(0, actualHeight - d, d, d, 90, 90);
     path.CloseFigure();
 
     graphics.FillPath(&bgBrush, &path);
 
-    // Draw Text (Stabilized)
-    Font font(L"Segoe UI", 14, FontStyleBold);
+    // Draw Text (Stabilized, scaled font)
+    float scaledFontSize = 14.0f * scale;
+    Font font(L"Segoe UI", scaledFontSize, FontStyleBold);
     SolidBrush textBrush(Color(255, 255, 255, 255));
     SolidBrush onBrush(Color(255, 0, 255, 0));
     SolidBrush offBrush(Color(255, 255, 50, 50));
@@ -321,8 +350,8 @@ void UpdateOSD()
 
         float spaceWidth = boxSpace.Width / 2.0f;
         float totalStableWidth = boxKey.Width + spaceWidth + boxWidestStatus.Width;
-        float startX = (OSD_WIDTH - totalStableWidth) / 2.0f;
-        float startY = (OSD_HEIGHT - boxKey.Height) / 2.0f;
+        float startX = (actualWidth - totalStableWidth) / 2.0f;
+        float startY = (actualHeight - boxKey.Height) / 2.0f;
 
         graphics.DrawString(keyPart.c_str(), -1, &font, PointF(startX, startY), &textBrush);
         graphics.DrawString(statusPart.c_str(), -1, &font,
@@ -336,12 +365,11 @@ void UpdateOSD()
     bmp.GetHBITMAP(Color(0, 0, 0, 0), &hBitmap);
     HBITMAP hOldBitmap = (HBITMAP)SelectObject(hdcMem, hBitmap);
 
-    SIZE size = { OSD_WIDTH, OSD_HEIGHT };
+    SIZE size = { actualWidth, actualHeight };
     POINT ptSrc = { 0, 0 };
     POINT ptDst = { 0, 0 };
-    RECT rc; GetWindowRect(g_hwndOSD, &rc);
-    ptDst.x = rc.left;
-    ptDst.y = rc.top;
+    ptDst.x = windowRect.left;
+    ptDst.y = windowRect.top;
 
     BLENDFUNCTION blend = { 0 };
     blend.BlendOp = AC_SRC_OVER;
