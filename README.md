@@ -1,3 +1,5 @@
+15 Jan 2026 - https://www.virustotal.com/gui/file/15f2795e01dc8574786b0a3305e8249a50a95665d1001bf305d616bd4b50b1b1/detection
+
 # OSD Lock Indicator
 
 <div align="center">
