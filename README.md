@@ -34,7 +34,7 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🔍 **Perfect Clarity** - Semi-transparent background with 100% opaque text
 
 ### Performance
-- ⚡ **Ultra-Lightweight** - ~230 KB executable size
+- ⚡ **Ultra-Lightweight** - ~206 KB executable size
 - 🚀 **Minimal Memory** - Uses only ~1.6 MB of RAM
 - 💨 **Instant Startup** - Launches in milliseconds
 - 🎯 **Zero Dependencies** - No .NET framework or runtime required
@@ -368,7 +368,7 @@ Most modern games support borderless windowed mode natively.
    - Look for `OSD Lock Indicator` in the Processes tab
 
 2. **Check display settings:**
-   - The indicator appears 75 pixels from the bottom of your screen
+   - The indicator appears 15 pixels from the bottom of your screen
    - Move your mouse to the desired monitor before pressing Caps/Num Lock
 
 ### Multiple instances are running

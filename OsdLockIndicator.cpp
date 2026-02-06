@@ -8,7 +8,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
-#include <string>
 #include <gdiplus.h>
 #include <tlhelp32.h>
 #include <psapi.h>
@@ -28,57 +27,57 @@ using namespace Gdiplus;
 // WINDOW SIZE & SHAPE
 // =============================================================================
 
-constexpr int OSD_WIDTH       = 175;    // Width of the indicator (pixels)
-constexpr int OSD_HEIGHT      = 60;     // Height of the indicator (pixels)
-constexpr int CORNER_RADIUS   = 20;     // Roundness of corners (0 = square)
+constexpr int OSD_WIDTH = 175;    // Width of the indicator (pixels)
+constexpr int OSD_HEIGHT = 60;     // Height of the indicator (pixels)
+constexpr int CORNER_RADIUS = 20;     // Roundness of corners (0 = square)
 
 // =============================================================================
 // POSITION ON SCREEN
 // =============================================================================
 
 constexpr int DISTANCE_FROM_BOTTOM = 15;    // How far from the bottom of the screen (pixels)
-                                            // Increase to move the indicator higher
+// Increase to move the indicator higher
 
 // =============================================================================
 // COLORS - Format: (Alpha, Red, Green, Blue) - Values 0-255
 // =============================================================================
 
 // Background
-constexpr int BG_ALPHA        = 80;     // Background transparency (0=invisible, 255=solid)
-constexpr int BG_RED          = 0;      // Background red component
-constexpr int BG_GREEN        = 0;      // Background green component  
-constexpr int BG_BLUE         = 0;      // Background blue component
+constexpr int BG_ALPHA = 80;     // Background transparency (0=invisible, 255=solid)
+constexpr int BG_RED = 0;      // Background red component
+constexpr int BG_GREEN = 0;      // Background green component  
+constexpr int BG_BLUE = 0;      // Background blue component
 
 // Text Label ("CapsLock:" / "NumLock:")
-constexpr int TEXT_RED        = 255;    // Label text red
-constexpr int TEXT_GREEN      = 255;    // Label text green
-constexpr int TEXT_BLUE       = 255;    // Label text blue (255,255,255 = white)
+constexpr int TEXT_RED = 255;    // Label text red
+constexpr int TEXT_GREEN = 255;    // Label text green
+constexpr int TEXT_BLUE = 255;    // Label text blue (255,255,255 = white)
 
 // "ON" Status Color (default: soft green)
-constexpr int ON_RED          = 76;     // ON text red
-constexpr int ON_GREEN        = 217;    // ON text green
-constexpr int ON_BLUE         = 100;    // ON text blue
+constexpr int ON_RED = 76;     // ON text red
+constexpr int ON_GREEN = 217;    // ON text green
+constexpr int ON_BLUE = 100;    // ON text blue
 
 // "OFF" Status Color (default: soft coral-red)
-constexpr int OFF_RED         = 255;    // OFF text red
-constexpr int OFF_GREEN       = 95;     // OFF text green
-constexpr int OFF_BLUE        = 87;     // OFF text blue
+constexpr int OFF_RED = 255;    // OFF text red
+constexpr int OFF_GREEN = 95;     // OFF text green
+constexpr int OFF_BLUE = 87;     // OFF text blue
 
 // =============================================================================
 // ANIMATION TIMING
 // =============================================================================
 
-constexpr int FADE_SPEED      = 25;     // Fade speed (higher = faster, 1-50 recommended)
-constexpr int ANIM_INTERVAL   = 10;     // Milliseconds between animation frames
-constexpr int DISPLAY_TIME    = 1500;   // How long to show before fading out (milliseconds)
+constexpr int FADE_SPEED = 25;     // Fade speed (higher = faster, 1-50 recommended)
+constexpr int ANIM_INTERVAL = 10;     // Milliseconds between animation frames
+constexpr int DISPLAY_TIME = 1500;   // How long to show before fading out (milliseconds)
 constexpr bool EASE_ANIMATION = true;   // true = smooth easing, false = linear fade
 
 // =============================================================================
 // FONT SETTINGS
 // =============================================================================
 
-constexpr float FONT_SIZE     = 14.0f;          // Font size in points
-const wchar_t* FONT_NAME      = L"Segoe UI";    // Font family name
+constexpr float FONT_SIZE = 14.0f;       // Font size in points
+const wchar_t* const FONT_NAME = L"Segoe UI";  // Font family name
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -98,7 +97,7 @@ int g_currentAlpha = 0;
 
 HWND g_hwndOSD = NULL;
 HHOOK g_keyboardHook = NULL;
-std::wstring g_text = L"";
+wchar_t g_text[64] = { 0 };
 ULONG_PTR g_gdiplusToken;
 
 constexpr UINT_PTR TIMER_ANIM = 1;
@@ -148,6 +147,34 @@ void MarkSetupCompleted();
 bool TerminateOtherInstances();
 
 // =============================================================================
+// Helper: Case-insensitive substring search for command line
+// =============================================================================
+
+bool ContainsArgInsensitive(const char* haystack, const char* needle)
+{
+    if (!haystack || !needle) return false;
+
+    size_t hLen = lstrlenA(haystack);
+    size_t nLen = lstrlenA(needle);
+
+    if (nLen > hLen) return false;
+
+    for (size_t i = 0; i <= hLen - nLen; i++) {
+        bool match = true;
+        for (size_t j = 0; j < nLen; j++) {
+            char h = haystack[i + j];
+            char n = needle[j];
+            // Lowercase ASCII letters
+            if (h >= 'A' && h <= 'Z') h += 32;
+            if (n >= 'A' && n <= 'Z') n += 32;
+            if (h != n) { match = false; break; }
+        }
+        if (match) return true;
+    }
+    return false;
+}
+
+// =============================================================================
 // Animation Easing Function
 // =============================================================================
 
@@ -157,19 +184,21 @@ inline int CalculateNextAlpha(int current, int target, bool fadeIn)
         // Linear animation
         if (fadeIn) {
             return min(current + FADE_SPEED, target);
-        } else {
+        }
+        else {
             return max(current - FADE_SPEED, target);
         }
     }
-    
+
     // Ease-out quadratic for smooth deceleration
     float progress = static_cast<float>(abs(target - current)) / 255.0f;
     int step = static_cast<int>(FADE_SPEED * (0.5f + progress * 1.5f));
     step = max(step, 3); // Minimum step to ensure animation completes
-    
+
     if (fadeIn) {
         return min(current + step, target);
-    } else {
+    }
+    else {
         return max(current - step, target);
     }
 }
@@ -199,8 +228,8 @@ bool TerminateOtherInstances()
     wchar_t currentPath[MAX_PATH];
     GetModuleFileNameW(NULL, currentPath, MAX_PATH);
 
-    std::wstring currentPathLower = currentPath;
-    for (auto& c : currentPathLower) c = towlower(c);
+    // Lowercase for comparison
+    for (wchar_t* p = currentPath; *p; p++) *p = towlower(*p);
 
     bool terminatedAny = false;
 
@@ -226,10 +255,9 @@ bool TerminateOtherInstances()
                 if (hProcess != NULL) {
                     wchar_t processPath[MAX_PATH];
                     if (GetModuleFileNameExW(hProcess, NULL, processPath, MAX_PATH) > 0) {
-                        std::wstring processPathLower = processPath;
-                        for (auto& c : processPathLower) c = towlower(c);
+                        for (wchar_t* p = processPath; *p; p++) *p = towlower(*p);
 
-                        if (processPathLower == currentPathLower) {
+                        if (wcscmp(processPath, currentPath) == 0) {
                             TerminateProcess(hProcess, 0);
                             terminatedAny = true;
                         }
@@ -323,7 +351,7 @@ void MarkSetupCompleted()
 {
     HKEY hKey;
     DWORD disposition;
-    
+
     if (RegCreateKeyExW(HKEY_CURRENT_USER, L"SOFTWARE\\OsdLockIndicator",
         0, NULL, REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, NULL, &hKey, &disposition) == ERROR_SUCCESS) {
 
@@ -346,11 +374,10 @@ int WINAPI WinMain(
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(nShowCmd);
 
-    // --- Handle Uninstall Command ---
-    std::string cmdLine(lpCmdLine);
-    if (cmdLine.find("/uninstall") != std::string::npos ||
-        cmdLine.find("--uninstall") != std::string::npos ||
-        cmdLine.find("-uninstall") != std::string::npos) {
+    // --- Handle Uninstall Command (case-insensitive) ---
+    if (ContainsArgInsensitive(lpCmdLine, "/uninstall") ||
+        ContainsArgInsensitive(lpCmdLine, "--uninstall") ||
+        ContainsArgInsensitive(lpCmdLine, "-uninstall")) {
 
         bool terminatedProcesses = TerminateOtherInstances();
         if (terminatedProcesses) {
@@ -369,7 +396,8 @@ int WINAPI WinMain(
                 L"You can now safely delete the executable file.",
                 L"Uninstall Complete",
                 MB_OK | MB_ICONINFORMATION);
-        } else {
+        }
+        else {
             MessageBoxW(NULL,
                 L"Processes were terminated, but could not remove from startup registry.\n\n"
                 L"Please manually remove from:\n"
@@ -381,10 +409,10 @@ int WINAPI WinMain(
         return 0;
     }
 
-    // --- Handle Install Command (force show startup prompt) ---
-    if (cmdLine.find("/install") != std::string::npos ||
-        cmdLine.find("--install") != std::string::npos ||
-        cmdLine.find("-install") != std::string::npos) {
+    // --- Handle Install Command (case-insensitive) ---
+    if (ContainsArgInsensitive(lpCmdLine, "/install") ||
+        ContainsArgInsensitive(lpCmdLine, "--install") ||
+        ContainsArgInsensitive(lpCmdLine, "-install")) {
 
         int result = MessageBoxW(NULL,
             L"Would you like OSD Lock Indicator to start automatically with Windows?\n\n"
@@ -400,14 +428,16 @@ int WINAPI WinMain(
                     L"[OK] OSD Lock Indicator will now start with Windows.",
                     L"Setup Complete",
                     MB_OK | MB_ICONINFORMATION);
-            } else {
+            }
+            else {
                 MessageBoxW(NULL,
                     L"Could not add to Windows startup.\n"
                     L"Please try running as administrator.",
                     L"Setup Error",
                     MB_OK | MB_ICONWARNING);
             }
-        } else {
+        }
+        else {
             RemoveFromStartup();
             MessageBoxW(NULL,
                 L"[OK] OSD Lock Indicator will NOT start with Windows.\n\n"
@@ -422,11 +452,14 @@ int WINAPI WinMain(
 
     // --- Initialize GDI+ ---
     GdiplusStartupInput gdiplusStartupInput;
-    GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL);
+    if (GdiplusStartup(&g_gdiplusToken, &gdiplusStartupInput, NULL) != Ok) {
+        return 1;
+    }
 
     // --- Prevent Multiple Instances ---
     HANDLE mutex = CreateMutexW(NULL, TRUE, L"Global\\OsdLockIndicator_Unique_ID");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        GdiplusShutdown(g_gdiplusToken);
         return 0;
     }
 
@@ -444,7 +477,7 @@ int WINAPI WinMain(
         if (result == IDYES) {
             AddToStartup();
         }
-        
+
         MarkSetupCompleted();
     }
 
@@ -483,7 +516,7 @@ int WINAPI WinMain(
     if (g_keyboardHook) UnhookWindowsHookEx(g_keyboardHook);
     GdiplusShutdown(g_gdiplusToken);
     if (mutex) { ReleaseMutex(mutex); CloseHandle(mutex); }
-    
+
     return 0;
 }
 
@@ -534,15 +567,28 @@ void UpdateOSD()
     SolidBrush onBrush(Color(255, ON_RED, ON_GREEN, ON_BLUE));
     SolidBrush offBrush(Color(255, OFF_RED, OFF_GREEN, OFF_BLUE));
 
-    std::wstring text = g_text;
-    size_t colonPos = text.find(L':');
+    // Find the colon in g_text
+    const wchar_t* colonPtr = wcschr(g_text, L':');
 
-    if (colonPos != std::wstring::npos) {
-        std::wstring keyPart = text.substr(0, colonPos + 1);
-        std::wstring statusPart = text.substr(colonPos + 2);
+    if (colonPtr != nullptr) {
+        // Split into key part and status part
+        wchar_t keyPart[32] = { 0 };
+        wchar_t statusPart[8] = { 0 };
+
+        size_t keyLen = (size_t)(colonPtr - g_text + 1); // include colon
+        if (keyLen < 32) {
+            wcsncpy_s(keyPart, 32, g_text, keyLen);
+            keyPart[keyLen] = L'\0';
+        }
+
+        // Status part starts after ": " (colon + space)
+        const wchar_t* statusStart = colonPtr + 2;
+        if (*statusStart) {
+            wcscpy_s(statusPart, 8, statusStart);
+        }
 
         RectF boxKey, boxWidestStatus, boxSpace;
-        graphics.MeasureString(keyPart.c_str(), -1, &font, PointF(0, 0), &boxKey);
+        graphics.MeasureString(keyPart, -1, &font, PointF(0, 0), &boxKey);
         graphics.MeasureString(L"OFF", -1, &font, PointF(0, 0), &boxWidestStatus);
         graphics.MeasureString(L" ", -1, &font, PointF(0, 0), &boxSpace);
 
@@ -551,10 +597,12 @@ void UpdateOSD()
         float startX = (OSD_WIDTH - totalStableWidth) / 2.0f;
         float startY = (OSD_HEIGHT - boxKey.Height) / 2.0f;
 
-        graphics.DrawString(keyPart.c_str(), -1, &font, PointF(startX, startY), &textBrush);
-        graphics.DrawString(statusPart.c_str(), -1, &font,
+        graphics.DrawString(keyPart, -1, &font, PointF(startX, startY), &textBrush);
+
+        bool isOn = (wcscmp(statusPart, L"ON") == 0);
+        graphics.DrawString(statusPart, -1, &font,
             PointF(startX + boxKey.Width + spaceWidth, startY),
-            (statusPart == L"ON") ? &onBrush : &offBrush);
+            isOn ? &onBrush : &offBrush);
     }
 
     // --- Update Layered Window ---
@@ -574,7 +622,7 @@ void UpdateOSD()
     SIZE size = { OSD_WIDTH, OSD_HEIGHT };
     POINT ptSrc = { 0, 0 };
     POINT ptDst = { 0, 0 };
-    
+
     RECT rc;
     GetWindowRect(g_hwndOSD, &rc);
     ptDst.x = rc.left;
@@ -603,7 +651,8 @@ void ShowIndicator()
         g_animState = STATE_FADING_IN;
         SetTimer(g_hwndOSD, TIMER_ANIM, ANIM_INTERVAL, NULL);
         ShowWindow(g_hwndOSD, SW_SHOWNOACTIVATE);
-    } else if (g_animState == STATE_VISIBLE || g_animState == STATE_FADING_IN) {
+    }
+    else if (g_animState == STATE_VISIBLE || g_animState == STATE_FADING_IN) {
         // Already visible - just reset the stay timer
         g_currentAlpha = 255;
         g_animState = STATE_VISIBLE;
@@ -619,14 +668,18 @@ void ShowIndicator()
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg) {
-    
+
     case WM_KEYSTATE_CHANGED:
     {
         UINT vkCode = static_cast<UINT>(wParam);
         const wchar_t* keyName = (vkCode == VK_CAPITAL) ? L"CapsLock" : L"NumLock";
         bool isOn = (GetKeyState(vkCode) & 0x0001) != 0;
-        g_text = std::wstring(keyName) + L": " + (isOn ? L"ON" : L"OFF");
-        
+
+        // Build text: "CapsLock: ON" or "NumLock: OFF" etc.
+        wcscpy_s(g_text, 64, keyName);
+        wcscat_s(g_text, 64, L": ");
+        wcscat_s(g_text, 64, isOn ? L"ON" : L"OFF");
+
         ShowIndicator();
         return 0;
     }
@@ -664,7 +717,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         return 0;
     }
-    
+
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
