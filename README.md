@@ -1,4 +1,5 @@
 1.0.4 - 06 Feb 2026 - https://www.virustotal.com/gui/file/6f2382935b218920cffc103d86dc438425ccfd3235d6ab4420c9cc5f67e41551/detection
+
 1.0.3 - 15 Jan 2026 - https://www.virustotal.com/gui/file/15f2795e01dc8574786b0a3305e8249a50a95665d1001bf305d616bd4b50b1b1/detection
 
 # OSD Lock Indicator
