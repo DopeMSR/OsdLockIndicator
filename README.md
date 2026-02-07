@@ -1,12 +1,12 @@
 1.0.5 - 07 Feb 2026 - https://www.virustotal.com/gui/file/d85f342cb54db2fd8f7286158c8c5fd26cc56bc81738040082f7cfe87692d23d?nocache=1
-      - Reduced AV false positives (19 → 2 detections)
-      - Enabled security features: Buffer Security, SDL
-      - Added application manifest for Windows compatibility
-      - Included debug information for AV verification
-      - Enhanced version metadata with GitHub link
+- Reduced AV false positives (19 → 2 detections)
+- Enabled security features: Buffer Security, SDL
+- Added application manifest for Windows compatibility
+- Included debug information for AV verification
+- Enhanced version metadata with GitHub link
 
 1.0.4 - 06 Feb 2026 - https://www.virustotal.com/gui/file/6f2382935b218920cffc103d86dc438425ccfd3235d6ab4420c9cc5f67e41551/detection
-      - ⚠️ Higher AV detections due to aggressive optimizations
+- ⚠️ Higher AV detections due to aggressive optimizations
 
 1.0.3 - 15 Jan 2026 - https://www.virustotal.com/gui/file/15f2795e01dc8574786b0a3305e8249a50a95665d1001bf305d616bd4b50b1b1/detection
 
