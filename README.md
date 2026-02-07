@@ -1,5 +1,5 @@
-1.0.5 - 07 Feb 2026 - https://www.virustotal.com/gui/file/d85f342cb54db2fd8f7286158c8c5fd26cc56bc81738040082f7cfe87692d23d?nocache=1
-- Reduced AV false positives (19 → 2 detections)
+1.0.5 - 07 Feb 2026 - https://www.virustotal.com/gui/file/402bf0bd1e5bb7860a2712eebf254a77acc6af7e6eae3892382420f2de28b09f?nocache=1
+- Reduced AV false positives (19 → 1 detections)
 - Enabled security features: Buffer Security, SDL
 - Added application manifest for Windows compatibility
 - Included debug information for AV verification
