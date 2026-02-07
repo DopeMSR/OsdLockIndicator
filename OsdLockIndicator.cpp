@@ -1,9 +1,27 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-//  OSD LOCK INDICATOR - Customizable On-Screen Display for Caps/Num Lock
+//  OSD LOCK INDICATOR - Accessibility Tool for Keyboard Lock States
+//
+//  PURPOSE: 
+//    Displays visual notifications when Caps Lock or Num Lock are toggled
+//    to assist users who may not notice LED indicators or use keyboards
+//    without indicator lights.
+//
+//  KEYBOARD HOOK USAGE:
+//    Required to detect lock key state changes globally across all applications.
+//    This is standard for keyboard utility software (remappers, layout switchers).
+//    
+//    PRIVACY GUARANTEE - This application does NOT:
+//      ❌ Log any keystrokes
+//      ❌ Capture passwords or sensitive data  
+//      ❌ Send any data over the network
+//      ❌ Store any information to disk
+//      ❌ Monitor anything except VK_CAPITAL and VK_NUMLOCK
 //
 //  Author: Dope M.S.R. (github.com/DopeMSR)
-//  License: MIT
+//  License: MIT - Open Source
+//  Source: https://github.com/DopeMSR/OsdLockIndicator
+//  Version: 1.0.5
 //
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -503,6 +521,9 @@ int WINAPI WinMain(
     UpdateOSD();
 
     // --- Install Keyboard Hook ---
+    // PRIVACY NOTICE: This hook monitors ONLY VK_CAPITAL and VK_NUMLOCK.
+    // It does NOT log keystrokes, capture passwords, or send data anywhere.
+    // Required for detecting lock key state changes globally.
     g_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
 
     // --- Message Loop ---
@@ -722,7 +743,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 // =============================================================================
-// Keyboard Hook
+// KEYBOARD HOOK - PRIVACY & SECURITY NOTICE
+// =============================================================================
+// This hook monitors ONLY Caps Lock (VK_CAPITAL) and Num Lock (VK_NUMLOCK).
+// 
+// It does NOT:
+//   ❌ Log any keystrokes beyond these two keys
+//   ❌ Capture passwords or sensitive data
+//   ❌ Send any data over the network
+//   ❌ Store any information to disk
+//   ❌ Monitor typing in any application
+// 
+// Purpose: Detect when user presses Caps/Num Lock to show visual indicator
+// Scope: Global (system-wide) to detect keys even when app is in background
+// Similar to: Keyboard layout switchers, CapsLock remappers, macro utilities
 // =============================================================================
 
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
@@ -730,8 +764,9 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     if (nCode >= 0 && wParam == WM_KEYUP) {
         KBDLLHOOKSTRUCT* pKey = (KBDLLHOOKSTRUCT*)lParam;
 
+        // Only process Caps Lock and Num Lock - ignore all other keys
         if (pKey->vkCode == VK_CAPITAL || pKey->vkCode == VK_NUMLOCK) {
-            // Post message to handle in the main thread (avoids Sleep hack)
+            // Post message to handle in the main thread
             PostMessage(g_hwndOSD, WM_KEYSTATE_CHANGED, pKey->vkCode, 0);
         }
     }

@@ -1,4 +1,12 @@
+1.0.5 - 07 Feb 2026 - https://www.virustotal.com/gui/file/d85f342cb54db2fd8f7286158c8c5fd26cc56bc81738040082f7cfe87692d23d?nocache=1
+      - Reduced AV false positives (19 → 2 detections)
+      - Enabled security features: Buffer Security, SDL
+      - Added application manifest for Windows compatibility
+      - Included debug information for AV verification
+      - Enhanced version metadata with GitHub link
+
 1.0.4 - 06 Feb 2026 - https://www.virustotal.com/gui/file/6f2382935b218920cffc103d86dc438425ccfd3235d6ab4420c9cc5f67e41551/detection
+      - ⚠️ Higher AV detections due to aggressive optimizations
 
 1.0.3 - 15 Jan 2026 - https://www.virustotal.com/gui/file/15f2795e01dc8574786b0a3305e8249a50a95665d1001bf305d616bd4b50b1b1/detection
 
@@ -36,7 +44,7 @@ Unlike bloated alternatives that consume 15-25 MB of RAM, **OSD Lock Indicator**
 - 🔍 **Perfect Clarity** - Semi-transparent background with 100% opaque text
 
 ### Performance
-- ⚡ **Ultra-Lightweight** - ~206 KB executable size
+- ⚡ **Ultra-Lightweight** - ~209 KB executable size
 - 🚀 **Minimal Memory** - Uses only ~1.6 MB of RAM
 - 💨 **Instant Startup** - Launches in milliseconds
 - 🎯 **Zero Dependencies** - No .NET framework or runtime required
@@ -241,10 +249,10 @@ constexpr bool EASE_ANIMATION = false;
 
 The project is pre-configured with optimal settings:
 
-- **Optimization:** Minimize Size (/O1)
+- **Optimization:** MaxSpeed (/O2)
 - **Runtime Library:** Multi-threaded (/MT) - no runtime dependencies
 - **Incremental Linking:** Disabled
-- **Debug Info:** Disabled in Release
+- **Debug Info:** Enabled in Release
 
 ---
 
@@ -288,7 +296,7 @@ Most modern games support borderless windowed mode natively.
 
 | Metric | Value |
 |--------|-------|
-| Executable Size | ~230 KB |
+| Executable Size | ~209 KB |
 | RAM Usage (Idle) | ~1.6 MB |
 | RAM Usage (Active) | ~1.7 MB |
 | CPU Usage (Idle) | <0.1% |
@@ -301,7 +309,7 @@ Most modern games support borderless windowed mode natively.
 
 | Feature | OSD Lock Indicator | Typical Alternatives |
 |---------|-------------------|---------------------|
-| **File Size** | ~230 KB | 2-15 MB |
+| **File Size** | ~209 KB | 2-15 MB |
 | **RAM Usage** | ~1.6 MB | 8-25 MB |
 | **Dependencies** | None | .NET, Java, or other runtimes |
 | **Visual Quality** | Anti-aliased, smooth | Varies |
